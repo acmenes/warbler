@@ -30,7 +30,7 @@ class UpdateUserBioForm(FlaskForm):
     username = StringField('Username')
     email = StringField('E-mail', validators=[Email()])
     image_url = StringField('(Optional) Image URL')
-    header_image_url = StringField('Header Image URL')
+    header_image_url = StringField('(Optional) Header Image URL')
     bio = TextAreaField('Bio')
     location = TextField('Location')
     password = PasswordField('Password')

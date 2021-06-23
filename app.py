@@ -8,6 +8,8 @@ from forms import UserAddForm, LoginForm, MessageForm, UpdateUserBioForm
 from models import db, connect_db, User, Message
 
 CURR_USER_KEY = "curr_user"
+DEFAULT_USER_IMAGE = "/static/images/default-pic.png"
+DEFAULT_HEADER_IMAGE = "/static/images/warbler-hero.jpg"
 
 app = Flask(__name__)
 
@@ -210,29 +212,33 @@ def stop_following(follow_id):
 
 
 @app.route('/users/profile', methods=["GET", "POST"])
-def profile():
+def update_profile():
     """Update profile for current user."""
 
-    user = User.query.get_or_404()
-
-    form = UpdateUserBioForm()
-
-    if g.user:
-        if form.validate_on_submit:
-            user.username = form.username.data
-            user.email = form.email.data
-            user.image_url = form.image_url.data
-            user.header_image_url = form.header_image_url.data
-            user.bio = form.bio.data
-            user.location = form.location.data
-            db.session.commit()
-            return redirect ('/users/<int:id>')
-        else:
-            return render_template('users/edit.html', form=form, user=user)
-    else:
+    if not g.user:
+        flash('Unauthorized', 'danger')
         return redirect('/')
 
-    # return render_template('users/edit.html', form=form)
+    user = g.user
+    form = UpdateUserBioForm(obj=user)
+
+    # populate the form with current user data from the DB
+
+    if form.validate_on_submit():
+        if User.authenticate(user.username, form.password.data):
+            user.username = form.username.data
+            user.email = form.email.data
+            user.image_url = form.image_url.data or DEFAULT_USER_IMAGE
+            user.header_image_url = form.header_image_url.data or DEFAULT_HEADER_IMAGE
+            user.bio = form.bio.data
+            user.location = form.location.data
+
+            db.session.commit()
+            return redirect(f'/users/{user.id}')
+        
+        flash("Wrong password", "danger")
+    
+    return render_template('users/edit.html', form=form, user_id=user.id)
 
 
 @app.route('/users/delete', methods=["POST"])
@@ -313,8 +319,10 @@ def homepage():
     """
 
     if g.user:
+        following = [follow.id for follow in g.user.following] + [g.user.id]
         messages = (Message
                     .query
+                    .filter(Message.user_id.in_(following))
                     .order_by(Message.timestamp.desc())
                     .limit(100)
                     .all())
