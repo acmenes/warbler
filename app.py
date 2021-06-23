@@ -5,7 +5,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
 from forms import UserAddForm, LoginForm, MessageForm, UpdateUserBioForm
-from models import db, connect_db, User, Message
+from models import db, connect_db, User, Message, Likes
 
 CURR_USER_KEY = "curr_user"
 DEFAULT_USER_IMAGE = "/static/images/default-pic.png"
@@ -209,6 +209,21 @@ def stop_following(follow_id):
     db.session.commit()
 
     return redirect(f"/users/{g.user.id}/following")
+
+@app.route('/users/add_like/<int:message_id>', methods=["GET", "POST"])
+def like_message(message_id):
+
+    # HAVING TROUBLE WITH THIS 
+    
+    message = Message.query.get_or_404(message_id)
+
+    user = g.user
+
+    new_like = Likes(user.id, message)
+    db.session.add(new_like)
+    db.session.commit()
+
+    return new_like
 
 
 @app.route('/users/profile', methods=["GET", "POST"])
