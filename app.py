@@ -214,17 +214,32 @@ def stop_following(follow_id):
 def like_message(message_id):
 
     # HAVING TROUBLE WITH THIS 
-    
+
     message = Message.query.get_or_404(message_id)
 
     user = g.user
+    print(user)
 
-    new_like = Likes(user.id, message)
-    db.session.add(new_like)
+    # new_like = Likes(user.id, message_id)
+    # db.session.add(new_like)
+
+    user.likes.append(message)
+    # keep in mind you need to remove it too by checking 
+    # if message in user.likes 
+    # filter the message from the array 
+    # check if the like is in there and if not add it, if so remove it
+    # change the bg color or icon on html side 
+    
     db.session.commit()
+    # make sure it doesn't redirect 
 
-    return new_like
+    return redirect('/')
 
+@app.route('/users/<int:user_id>/likes')
+def show_user_likes(user_id):
+
+    user = User.query.get_or_404(user_id)
+    return render_template("users/likes.html", user=user)
 
 @app.route('/users/profile', methods=["GET", "POST"])
 def update_profile():
