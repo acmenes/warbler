@@ -239,7 +239,8 @@ def like_message(message_id):
 def show_user_likes(user_id):
 
     user = User.query.get_or_404(user_id)
-    return render_template("users/likes.html", user=user)
+    likes = Likes.query.all()
+    return render_template("users/likes.html", user=user, likes=likes)
 
 @app.route('/users/profile', methods=["GET", "POST"])
 def update_profile():
