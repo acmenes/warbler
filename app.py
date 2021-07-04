@@ -235,12 +235,15 @@ def like_message(message_id):
 
     return redirect('/')
 
-@app.route('/users/<int:user_id>/likes')
+@app.route('/users/<int:user_id>/likes', methods=["GET"])
 def show_user_likes(user_id):
 
+    if not g.user:
+        flash("You cannot access this.", "danger")
+        return redirect('/')
+
     user = User.query.get_or_404(user_id)
-    likes = Likes.query.all()
-    return render_template("users/likes.html", user=user, likes=likes)
+    return render_template("users/likes.html", user=user, likes=user.likes)
 
 @app.route('/users/profile', methods=["GET", "POST"])
 def update_profile():
