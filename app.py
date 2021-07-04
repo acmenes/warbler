@@ -154,7 +154,8 @@ def users_show(user_id):
                 .order_by(Message.timestamp.desc())
                 .limit(100)
                 .all())
-    return render_template('users/show.html', user=user, messages=messages)
+    likes = [message.id for message in user.likes]
+    return render_template('users/show.html', user=user, messages=messages, likes=likes)
 
 
 @app.route('/users/<int:user_id>/following')
@@ -210,20 +211,11 @@ def stop_following(follow_id):
 
     return redirect(f"/users/{g.user.id}/following")
 
-@app.route('/users/add_like/<int:message_id>', methods=["GET", "POST"])
+@app.route('/users/add_like/<int:message_id>', methods=["POST"])
 def like_message(message_id):
 
-    # HAVING TROUBLE WITH THIS 
-
     message = Message.query.get_or_404(message_id)
-
-    user = g.user
-    print(user)
-
-    # new_like = Likes(user.id, message_id)
-    # db.session.add(new_like)
-
-    user.likes.append(message)
+    g.user.likes.append(message)
     # keep in mind you need to remove it too by checking 
     # if message in user.likes 
     # filter the message from the array 
